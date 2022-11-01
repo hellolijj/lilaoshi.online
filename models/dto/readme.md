@@ -1,0 +1,3 @@
+DTO(Data Transfer Object)数据传输对象
+
+首先我们接口接参可以使用DTO，简单来说就是Controller中函数的参数,例如下面的PageDTO
