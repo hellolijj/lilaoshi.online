@@ -1,6 +1,6 @@
 package dto
 
-type CurrentUserReq struct {
+type UserInfoReq struct {
 }
 
 type CurrentUserResp struct {
@@ -8,14 +8,14 @@ type CurrentUserResp struct {
 	ErrorCode    string `json:"errorCode"`
 	ErrorMessage string `json:"errorMessage"`
 
-	Data CurrentUserResData `json:"data"`
+	Data CurrentUserData `json:"data"`
 }
 
-type CurrentUserResData struct {
+type CurrentUserData struct {
 	IsLogin   bool   `json:"isLogin"`
 	Name      string `json:"name"`
 	Avatar    string `json:"avatar"`
-	Userid    string `json:"userid"`
+	UserId    string `json:"userid"`
 	Email     string `json:"email"`
 	Signature string `json:"signature"`
 	Title     string `json:"title"`
@@ -40,4 +40,25 @@ type CurrentUserResData struct {
 	} `json:"geographic"`
 	Address string `json:"address"`
 	Phone   string `json:"phone"`
+}
+
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Name string `json:"name"`
+	Mobile string `json:"mobile"`
+	AsAdmin bool `json:"asAdmin"`
+}
+
+type RegisterResp struct {
+	Status string `json:"status"`
+	ErrMessage string `json:"errMessage"`
+}
+
+type UserListResp struct {
+	Current int64 `json:"current"`
+	PageSize int64 `json:"pageSize"`
+	Total int `json:"total"`
+	Success bool `json:"success"`
+	Data interface{} `json:"data"`
 }

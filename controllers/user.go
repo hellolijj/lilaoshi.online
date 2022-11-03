@@ -3,12 +3,14 @@ package controllers
 import (
 	"cookie-shop-api/models"
 	"cookie-shop-api/models/dto"
+	"cookie-shop-api/services/user"
 	"encoding/json"
 	"errors"
 	"github.com/beego/beego/v2/server/web/context"
 	"strconv"
 	"strings"
 
+	gocontext "context"
 	beego "github.com/beego/beego/v2/server/web"
 )
 
@@ -32,14 +34,21 @@ func (l UserController) Login(ctx *context.Context) {
 		Type: input.Type,
 	}
 
-	if input.Password == "ant.design" && input.Username == "admin" {
-		resp.Status = "ok"
-		resp.CurrentAuthority = "admin"
+	ok, role, info, err := user.Login(input)
+	if err == models.ErrNoRegister || err == models.ErrWrongPassword || err == models.ErrUserInvalid {
+		resp.ErrMessage = err.Error()
+		data, _ := json.Marshal(resp)
+		ctx.ResponseWriter.Write(data)
+		return
 	}
 
-	if input.Password == "ant.design" && input.Username == "user" {
+	// todo cookie 加密存储
+	ctx.SetCookie("uid", info.UserId)
+	ctx.Input.CruSession.Set(gocontext.Background(), "uid", info.UserId)
+
+	if ok {
 		resp.Status = "ok"
-		resp.CurrentAuthority = "user"
+		resp.CurrentAuthority = role
 	}
 
 	data, _ := json.Marshal(resp)
@@ -47,37 +56,61 @@ func (l UserController) Login(ctx *context.Context) {
 }
 
 // 获取当前用户信息
-func (ctrl UserController) Current(ctx *context.Context) {
+func (ctrl UserController) CurrentUser(ctx *context.Context) {
 	var resp dto.CurrentUserResp
 
 	resp = dto.CurrentUserResp{
 		Success:      false,
-		Data:         dto.CurrentUserResData{IsLogin:false},
+		Data:         dto.CurrentUserData{IsLogin:false},
 	}
 
 	// 在线
-	if true {
+	online, uid := user.Online(ctx)
+	if online {
 		resp.Success = true
-		resp.Data = dto.CurrentUserResData{
-			IsLogin:     true,
-			Name:        "李俊君",
-			Avatar:      "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png",
-			Userid:      "1000",
-			Email:       "",
-			Signature:   "",
-			Title:       "",
-			Group:       "",
-			Tags:        nil,
-			NotifyCount: 0,
-			UnreadCount: 0,
-			Country:     "",
-			Access:      "",
-			Address: "",
-			Phone:   "",
+		user, err := models.GetUserByUsername(uid)
+		if err != nil {
+			ctx.WriteString(err.Error())
+			return
 		}
+		resp.Data = *user.ToDtoUser()
+		resp.Data.IsLogin = true
 	}
 
 	data, _ := json.Marshal(resp)
+	ctx.ResponseWriter.Write(data)
+}
+
+// 当前用户信息注册
+func (ctrl UserController) Register(ctx *context.Context) {
+	var input dto.RegisterRequest
+	err := json.Unmarshal(ctx.Input.RequestBody, &input)
+	if err != nil {
+		ctx.WriteString(err.Error())
+		return
+	}
+
+	ok, err := user.Register(input)
+	if err != nil || !ok  {
+		if err == models.ErrRegisterAlreadyExists {
+			res := dto.RegisterResp{ErrMessage: err.Error()}
+			data, _ := json.Marshal(res)
+			ctx.ResponseWriter.Write(data)
+		} else {
+			ctx.WriteString(err.Error())
+		}
+		return
+	}
+
+	res := dto.RegisterResp{Status: "ok"}
+	data, _ := json.Marshal(res)
+	ctx.ResponseWriter.Write(data)
+}
+
+func (ctrl UserController) Logout(ctx *context.Context) {
+	ctx.SetCookie("uid", "")
+	res := dto.LogoutResp{Success: true}
+	data, _ := json.Marshal(res)
 	ctx.ResponseWriter.Write(data)
 }
 
@@ -139,8 +172,8 @@ func (c *UserController) GetOne() {
 // @Param	fields	query	string	false	"Fields returned. e.g. col1,col2 ..."
 // @Param	sortby	query	string	false	"Sorted-by fields. e.g. col1,col2 ..."
 // @Param	order	query	string	false	"Order corresponding to each sortby field, if single value, apply to all sortby fields. e.g. desc,asc ..."
-// @Param	limit	query	string	false	"Limit the size of result set. Must be an integer"
-// @Param	offset	query	string	false	"Start position of result set. Must be an integer"
+// @Param	pageSize,limit	query	string	false	"Limit the size of result set. Must be an integer"
+// @Param	current,offset	query	string	false	"Start position of result set. Must be an integer"
 // @Success 200 {object} models.User
 // @Failure 403
 // @router / [get]
@@ -150,17 +183,23 @@ func (c *UserController) GetAll() {
 	var order []string
 	var query = make(map[string]string)
 	var limit int64 = 10
-	var offset int64
+	var offset, current int64
 
 	// fields: col1,col2,entity.col3
 	if v := c.GetString("fields"); v != "" {
 		fields = strings.Split(v, ",")
 	}
-	// limit: 10 (default is 10)
+	// pageSize, limit: 10 (default is 10)
+	if v, err := c.GetInt64("pageSize"); err == nil {
+		limit = v
+	}
 	if v, err := c.GetInt64("limit"); err == nil {
 		limit = v
 	}
-	// offset: 0 (default is 0)
+	// current, offset: 0 (default is 0)
+	if v, err := c.GetInt64("current"); err == nil {
+		offset = (v-1) * limit
+	}
 	if v, err := c.GetInt64("offset"); err == nil {
 		offset = v
 	}
@@ -190,7 +229,13 @@ func (c *UserController) GetAll() {
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {
-		c.Data["json"] = l
+		c.Data["json"] = dto.UserListResp{
+			Success: true,
+			Data:    l,
+			Total: len(l),
+			Current: current,
+			PageSize: limit,
+		}
 	}
 	c.ServeJSON()
 }

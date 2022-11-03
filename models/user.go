@@ -1,6 +1,7 @@
 package models
 
 import (
+	"cookie-shop-api/models/dto"
 	"errors"
 	"fmt"
 	"reflect"
@@ -10,15 +11,15 @@ import (
 )
 
 type User struct {
-	Id         int    `orm:"column(id);auto" description:"用户表主键"`
-	Username   string `orm:"column(username);size(45)" description:"用户名"`
-	Password   string `orm:"column(password);size(45)" description:"用户密码"`
-	Name       string `orm:"column(name);size(45);null" description:"用户姓名"`
-	Email      string `orm:"column(email);size(45)" description:"用户邮箱"`
-	Phone      string `orm:"column(phone);size(45);null" description:"用户电话"`
-	Address    string `orm:"column(address);size(45);null" description:"用户地址"`
-	Isadmin    uint64 `orm:"column(isadmin);size(1)" description:"是否为管理员"`
-	Isvalidate uint64 `orm:"column(isvalidate);size(1)" description:"账号是否有效"`
+	Id         int    `orm:"column(id);auto" description:"用户表主键" json:"id"`
+	Username   string `orm:"column(username);size(45)" description:"用户名" json:"username"`
+	Password   string `orm:"column(password);size(45)" description:"用户密码" json:"password"`
+	Name       string `orm:"column(name);size(45);null" description:"用户姓名" json:"name"`
+	Email      string `orm:"column(email);size(45)" description:"用户邮箱" json:"email"`
+	Phone      string `orm:"column(phone);size(45);null" description:"用户电话" json:"phone"`
+	Address    string `orm:"column(address);size(45);null" description:"用户地址" json:"address"`
+	Isadmin    string `orm:"column(isadmin);size(1)" description:"是否为管理员" json:"isadmin"`
+	Isvalidate string `orm:"column(isvalidate);size(1)" description:"账号是否有效" json:"isvalidate"`
 }
 
 func (t *User) TableName() string {
@@ -154,4 +155,33 @@ func DeleteUser(id int) (err error) {
 		}
 	}
 	return
+}
+
+func GetUserByUsername(username string) (v *User, err error) {
+	o := orm.NewOrm()
+	v = &User{Username: username}
+	if err = o.Read(v,"username"); err == nil {
+		return v, nil
+	}
+	return nil, err
+}
+
+func (u *User) ToDtoUser() *dto.CurrentUserData {
+	return &dto.CurrentUserData{
+		IsLogin:     false,
+		Name:        u.Name,
+		Avatar:      "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png",
+		UserId:      u.Username,
+		Email:       u.Email,
+		Signature:   "",
+		Title:       "",
+		Group:       "",
+		Tags:        nil,
+		NotifyCount: 0,
+		UnreadCount: 0,
+		Country:     "",
+		Access:      "",
+		Address: u.Address,
+		Phone:   u.Phone,
+	}
 }
