@@ -12,6 +12,7 @@ import (
 	"cookie-shop-api/services/user"
 	beego "github.com/beego/beego/v2/server/web"
 	"github.com/beego/beego/v2/server/web/context"
+	"strings"
 )
 
 func init() {
@@ -39,9 +40,17 @@ func init() {
 
 	// auth验证
 	beego.InsertFilter("/*", beego.BeforeRouter, func(ctx *context.Context) {
-		online, _ := user.Online(ctx)
-		if !online && ctx.Request.URL.Path != "/api/login/account" {
-			ctx.Redirect(302, "/user/login")
+		var pass = false
+		if online, _ := user.Online(ctx); online {
+			pass = true
+		}
+		if strings.Contains(ctx.Request.URL.Path, "/tools") {
+			pass = true
+		}
+
+		if !pass && ctx.Request.URL.Path != "/api/login/account" {
+			ctx.WriteString("请重新登录")
+			return
 		}
 	})
 
@@ -50,5 +59,5 @@ func init() {
 	beego.Post("/api/user/logout", controllers.UserController{}.Logout)
 	beego.Get("/api/currentUser", controllers.UserController{}.CurrentUser)  // 路由有问题
 	beego.Post("/api/user/register", controllers.UserController{}.Register)
-
+	beego.Get("/tools/craw", controllers.GoodController{}.Crawler)
 }

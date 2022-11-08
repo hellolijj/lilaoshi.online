@@ -10,8 +10,8 @@ import (
 )
 
 type Type struct {
-	Id   int    `orm:"column(id);auto" description:"商品类别表主键"`
-	Name string `orm:"column(name);size(45);null" description:"商品名称"`
+	Id   int    `orm:"column(id);auto" description:"商品类别表主键" json:"id"`
+	Name string `orm:"column(name);size(45);null" description:"商品名称" json:"name"`
 }
 
 func (t *Type) TableName() string {

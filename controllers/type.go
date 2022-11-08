@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cookie-shop-api/models"
+	"cookie-shop-api/models/dto"
 	"encoding/json"
 	"errors"
 	"strconv"
@@ -89,9 +90,16 @@ func (c *TypeController) GetAll() {
 	if v := c.GetString("fields"); v != "" {
 		fields = strings.Split(v, ",")
 	}
-	// limit: 10 (default is 10)
+	// pageSize, limit: 10 (default is 10)
+	if v, err := c.GetInt64("pageSize"); err == nil {
+		limit = v
+	}
 	if v, err := c.GetInt64("limit"); err == nil {
 		limit = v
+	}
+	// current, offset: 0 (default is 0)
+	if v, err := c.GetInt64("current"); err == nil {
+		offset = (v-1) * limit
 	}
 	// offset: 0 (default is 0)
 	if v, err := c.GetInt64("offset"); err == nil {
@@ -123,7 +131,13 @@ func (c *TypeController) GetAll() {
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {
-		c.Data["json"] = l
+		c.Data["json"] = dto.ListResp{
+			Success: true,
+			Data:    l,
+			Total: len(l),
+			Current: 1,
+			PageSize: limit,
+		}
 	}
 	c.ServeJSON()
 }

@@ -135,7 +135,7 @@ func UpdateUserById(m *User) (err error) {
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
-		if num, err = o.Update(m); err == nil {
+		if num, err = o.Update(m, "email","phone","address","isvalidate"); err == nil {
 			fmt.Println("Number of records updated in database:", num)
 		}
 	}
@@ -167,7 +167,7 @@ func GetUserByUsername(username string) (v *User, err error) {
 }
 
 func (u *User) ToDtoUser() *dto.CurrentUserData {
-	return &dto.CurrentUserData{
+	res := dto.CurrentUserData{
 		IsLogin:     false,
 		Name:        u.Name,
 		Avatar:      "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png",
@@ -180,8 +180,11 @@ func (u *User) ToDtoUser() *dto.CurrentUserData {
 		NotifyCount: 0,
 		UnreadCount: 0,
 		Country:     "",
-		Access:      "",
+		Access:      "user",
 		Address: u.Address,
 		Phone:   u.Phone,
+	}
+	if u.Isadmin == "1" {
+		res.Access = "admin"
 	}
 }

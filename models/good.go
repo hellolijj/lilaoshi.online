@@ -10,15 +10,15 @@ import (
 )
 
 type Good struct {
-	Id     int     `orm:"column(id);auto" description:"商品表主键"`
-	Name   string  `orm:"column(name);size(45);null" description:"商品名称"`
-	Cover  string  `orm:"column(cover);size(45);null" description:"商品封面图"`
-	Image1 string  `orm:"column(image1);size(45);null" description:"商品详情图1"`
-	Image2 string  `orm:"column(image2);size(45);null" description:"商品详情图2"`
-	Price  float32 `orm:"column(price);null" description:"商品价格"`
-	Intro  string  `orm:"column(intro);size(300);null" description:"商品描述"`
-	Stock  int     `orm:"column(stock);null" description:"商品库存"`
-	TypeId int     `orm:"column(type_id);null" description:"商品类型"`
+	Id     int     `orm:"column(id);auto" description:"商品表主键" json:"id"`
+	Name   string  `orm:"column(name);size(45);null" description:"商品名称" json:"name"`
+	Cover  string  `orm:"column(cover);size(45);null" description:"商品封面图" json:"cover"`
+	Image1 string  `orm:"column(image1);size(45);null" description:"商品详情图1" json:"image_1"`
+	Image2 string  `orm:"column(image2);size(45);null" description:"商品详情图2" json:"image_2"`
+	Price  string `orm:"column(price);null" description:"商品价格" json:"price"`
+	Intro  string  `orm:"column(intro);size(300);null" description:"商品描述" json:"intro"`
+	Stock  int     `orm:"column(stock);null" description:"商品库存" json:"stock"`
+	TypeId int     `orm:"column(type_id);null" description:"商品类型" json:"typeId"`
 }
 
 func (t *Good) TableName() string {
@@ -154,4 +154,13 @@ func DeleteGood(id int) (err error) {
 		}
 	}
 	return
+}
+
+func GetGoodByName(name string) (v *Good, err error) {
+	o := orm.NewOrm()
+	v = &Good{Name: name}
+	if err = o.Read(v, "name"); err == nil {
+		return v, nil
+	}
+	return nil, err
 }

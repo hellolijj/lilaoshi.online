@@ -2,8 +2,12 @@ package controllers
 
 import (
 	"cookie-shop-api/models"
+	"cookie-shop-api/models/dto"
+	"cookie-shop-api/tools/crawler"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/beego/beego/v2/server/web/context"
 	"strconv"
 	"strings"
 
@@ -83,7 +87,7 @@ func (c *GoodController) GetAll() {
 	var order []string
 	var query = make(map[string]string)
 	var limit int64 = 10
-	var offset int64
+	var offset, current int64
 
 	// fields: col1,col2,entity.col3
 	if v := c.GetString("fields"); v != "" {
@@ -92,6 +96,10 @@ func (c *GoodController) GetAll() {
 	// limit: 10 (default is 10)
 	if v, err := c.GetInt64("limit"); err == nil {
 		limit = v
+	}
+	// current, offset: 0 (default is 0)
+	if v, err := c.GetInt64("current"); err == nil {
+		offset = (v-1) * limit
 	}
 	// offset: 0 (default is 0)
 	if v, err := c.GetInt64("offset"); err == nil {
@@ -123,7 +131,13 @@ func (c *GoodController) GetAll() {
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {
-		c.Data["json"] = l
+		c.Data["json"] = dto.ListResp{
+			Success: true,
+			Data:    l,
+			Total: len(l),
+			Current: current,
+			PageSize: limit,
+		}
 	}
 	c.ServeJSON()
 }
@@ -168,4 +182,19 @@ func (c *GoodController) Delete() {
 		c.Data["json"] = err.Error()
 	}
 	c.ServeJSON()
+}
+
+
+func (ctrl GoodController) Crawler(ctx *context.Context) {
+	goods := crawler.FetchCookies()
+	for _, good := range goods {
+		fmt.Println(good)
+		data, _ := models.GetGoodByName(good.Name)
+		if data == nil {
+			_, err := models.AddGood(&good)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+		}
+	}
 }

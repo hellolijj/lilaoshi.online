@@ -55,7 +55,7 @@ type RegisterResp struct {
 	ErrMessage string `json:"errMessage"`
 }
 
-type UserListResp struct {
+type ListResp struct {
 	Current int64 `json:"current"`
 	PageSize int64 `json:"pageSize"`
 	Total int `json:"total"`

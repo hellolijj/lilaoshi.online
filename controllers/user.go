@@ -229,7 +229,7 @@ func (c *UserController) GetAll() {
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {
-		c.Data["json"] = dto.UserListResp{
+		c.Data["json"] = dto.ListResp{
 			Success: true,
 			Data:    l,
 			Total: len(l),
@@ -281,3 +281,4 @@ func (c *UserController) Delete() {
 	}
 	c.ServeJSON()
 }
+
