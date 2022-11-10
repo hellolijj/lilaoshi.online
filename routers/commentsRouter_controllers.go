@@ -52,6 +52,96 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"],
+        beego.ControllerComments{
+            Method: "Post",
+            Router: "/",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"],
+        beego.ControllerComments{
+            Method: "GetAll",
+            Router: "/",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"],
+        beego.ControllerComments{
+            Method: "GetOne",
+            Router: "/:id",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"],
+        beego.ControllerComments{
+            Method: "Put",
+            Router: "/:id",
+            AllowHTTPMethods: []string{"put"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:OrdersController"],
+        beego.ControllerComments{
+            Method: "Delete",
+            Router: "/:id",
+            AllowHTTPMethods: []string{"delete"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"],
+        beego.ControllerComments{
+            Method: "Post",
+            Router: "/",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"],
+        beego.ControllerComments{
+            Method: "GetAll",
+            Router: "/",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"],
+        beego.ControllerComments{
+            Method: "GetOne",
+            Router: "/:id",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"],
+        beego.ControllerComments{
+            Method: "Put",
+            Router: "/:id",
+            AllowHTTPMethods: []string{"put"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:ShoppingcarController"],
+        beego.ControllerComments{
+            Method: "Delete",
+            Router: "/:id",
+            AllowHTTPMethods: []string{"delete"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["cookie-shop-api/controllers:TypeController"] = append(beego.GlobalControllerRouter["cookie-shop-api/controllers:TypeController"],
         beego.ControllerComments{
             Method: "Post",

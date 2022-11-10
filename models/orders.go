@@ -1,60 +1,73 @@
 package models
 
 import (
-	"cookie-shop-api/models/dto"
 	"errors"
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/beego/beego/v2/client/orm"
 )
 
-type User struct {
-	Id         int    `orm:"column(id);auto" description:"用户表主键" json:"id"`
-	Username   string `orm:"column(username);size(45)" description:"用户名" json:"username"`
-	Password   string `orm:"column(password);size(45)" description:"用户密码" json:"password"`
-	Name       string `orm:"column(name);size(45);null" description:"用户姓名" json:"name"`
-	Email      string `orm:"column(email);size(45)" description:"用户邮箱" json:"email"`
-	Phone      string `orm:"column(phone);size(45);null" description:"用户电话" json:"phone"`
-	Address    string `orm:"column(address);size(45);null" description:"用户地址" json:"address"`
-	Isadmin    string `orm:"column(isadmin);size(1)" description:"是否为管理员" json:"isadmin"`
-	Isvalidate string `orm:"column(isvalidate);size(1)" description:"账号是否有效" json:"isvalidate"`
+const (
+	OrderCreated = "1"
+	OrderCanceled = "2"
+	OrderPayed = "2"
+)
+
+type Orders struct {
+	Id          int       `orm:"column(id);auto" description:"订单id" json:"id"`
+	GmtCreated  time.Time `orm:"column(gmt_created);type(timestamp)" description:"订单创建时间" json:"gmt_created"`
+	GmtModified time.Time `orm:"column(gmt_modified);type(timestamp)" description:"订单修改时间" json:"gmt_modified"`
+	Uid         string    `orm:"column(uid);size(16)" description:"用户id" json:"uid"`
+	GoodId      int       `orm:"column(good_id);null" description:"商品id" json:"good_id"`
+	Price       string    `orm:"column(price);size(16);null" description:"商品价格" json:"price"`
+	Count       int       `orm:"column(count);null" description:"商品数量" json:"count"`
+	Status      string    `orm:"column(status);size(2);null" description:"订单状态" json:"status"`
 }
 
-func (t *User) TableName() string {
-	return "user"
+
+type OrderItem struct {
+	Orders
+	Name string `json:"name"`
+	Cover string `json:"cover"`
+	Intro  string  `json:"intro"`
+}
+
+func (t *Orders) TableName() string {
+	return "orders"
 }
 
 func init() {
-	orm.RegisterModel(new(User))
+	orm.RegisterModel(new(Orders))
 }
 
-// AddUser insert a new User into database and returns
+// AddOrders insert a new Orders into database and returns
 // last inserted Id on success.
-func AddUser(m *User) (id int64, err error) {
+func AddOrders(m *Orders) (id int64, err error) {
 	o := orm.NewOrm()
 	id, err = o.Insert(m)
 	return
 }
 
-// GetUserById retrieves User by Id. Returns error if
+// GetOrdersById retrieves Orders by Id. Returns error if
 // Id doesn't exist
-func GetUserById(id int) (v *User, err error) {
+func GetOrdersById(id int) (v *Orders, err error) {
 	o := orm.NewOrm()
-	v = &User{Id: id}
+	v = &Orders{Id: id}
 	if err = o.Read(v); err == nil {
 		return v, nil
 	}
 	return nil, err
 }
 
-// GetAllUser retrieves all User matches certain condition. Returns empty list if
+// GetAllOrders retrieves all Orders matches certain condition. Returns empty list if
 // no records exist
-func GetAllUser(query map[string]string, fields []string, sortby []string, order []string,
+func GetAllOrders(query map[string]string, fields []string, sortby []string, order []string,
 	offset int64, limit int64) (ml []interface{}, err error) {
 	o := orm.NewOrm()
-	qs := o.QueryTable(new(User))
+	qs := o.QueryTable(new(Orders))
 	// query k=v
 	for k, v := range query {
 		// rewrite dot-notation to Object__Attribute
@@ -104,7 +117,7 @@ func GetAllUser(query map[string]string, fields []string, sortby []string, order
 		}
 	}
 
-	var l []User
+	var l []Orders
 	qs = qs.OrderBy(sortFields...)
 	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
 		if len(fields) == 0 {
@@ -127,65 +140,32 @@ func GetAllUser(query map[string]string, fields []string, sortby []string, order
 	return nil, err
 }
 
-// UpdateUser updates User by Id and returns error if
+// UpdateOrders updates Orders by Id and returns error if
 // the record to be updated doesn't exist
-func UpdateUserById(m *User) (err error) {
+func UpdateOrdersById(m *Orders) (err error) {
 	o := orm.NewOrm()
-	v := User{Id: m.Id}
+	v := Orders{Id: m.Id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
-		if num, err = o.Update(m, "email","phone","address","isvalidate"); err == nil {
+		if num, err = o.Update(m); err == nil {
 			fmt.Println("Number of records updated in database:", num)
 		}
 	}
 	return
 }
 
-// DeleteUser deletes User by Id and returns error if
+// DeleteOrders deletes Orders by Id and returns error if
 // the record to be deleted doesn't exist
-func DeleteUser(id int) (err error) {
+func DeleteOrders(id int) (err error) {
 	o := orm.NewOrm()
-	v := User{Id: id}
+	v := Orders{Id: id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
-		if num, err = o.Delete(&User{Id: id}); err == nil {
+		if num, err = o.Delete(&Orders{Id: id}); err == nil {
 			fmt.Println("Number of records deleted in database:", num)
 		}
 	}
 	return
-}
-
-func GetUserByUsername(username string) (v *User, err error) {
-	o := orm.NewOrm()
-	v = &User{Username: username}
-	if err = o.Read(v,"username"); err == nil {
-		return v, nil
-	}
-	return nil, err
-}
-
-func (u *User) ToDtoUser() *dto.CurrentUserData {
-	res := dto.CurrentUserData{
-		IsLogin:     false,
-		Name:        u.Name,
-		Avatar:      "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png",
-		UserId:      u.Username,
-		Email:       u.Email,
-		Signature:   "",
-		Title:       "",
-		Group:       "",
-		Tags:        nil,
-		NotifyCount: 0,
-		UnreadCount: 0,
-		Country:     "",
-		Access:      "user",
-		Address: u.Address,
-		Phone:   u.Phone,
-	}
-	if u.Isadmin == "1" {
-		res.Access = "admin"
-	}
-	return &res
 }

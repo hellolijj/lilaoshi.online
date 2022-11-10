@@ -12,5 +12,6 @@ type LoginRequest struct {
 	Password string `json:"password"`
 	Type string `json:"type"`
 	Username string `json:"username"`
+	Captcha string `json:"captcha"` // 验证码
+	Mobile string `json:"mobile"` // 手机号
 }
-

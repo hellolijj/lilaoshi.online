@@ -16,7 +16,7 @@ import (
 )
 
 func init() {
-	ns := beego.NewNamespace("/api",
+	ns := beego.NewNamespace("/api/v1",
 		beego.NSNamespace("/user",
 			beego.NSInclude(
 				&controllers.UserController{},
@@ -32,6 +32,16 @@ func init() {
 		beego.NSNamespace("/good",
 			beego.NSInclude(
 				&controllers.GoodController{},
+			),
+		),
+		beego.NSNamespace("/shoppingcar",
+			beego.NSInclude(
+				&controllers.ShoppingcarController{},
+			),
+		),
+		beego.NSNamespace("/orders",
+			beego.NSInclude(
+				&controllers.OrdersController{},
 			),
 		),
 	)
@@ -59,5 +69,12 @@ func init() {
 	beego.Post("/api/user/logout", controllers.UserController{}.Logout)
 	beego.Get("/api/currentUser", controllers.UserController{}.CurrentUser)  // 路由有问题
 	beego.Post("/api/user/register", controllers.UserController{}.Register)
+
+	beego.Post("/api/shoppingcar/op", controllers.ShoppingcarController{}.Op) // 加入到购物车
+	beego.Get("/api/shoppingcar/goods", controllers.ShoppingcarController{}.Goods) // 加入到购物车
+
+	beego.Post("/api/order/create", controllers.OrdersController{}.Create) // 下单
+	beego.Post("/api/order/pay", controllers.OrdersController{}.Pay) // 下单
+
 	beego.Get("/tools/craw", controllers.GoodController{}.Crawler)
 }
